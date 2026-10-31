@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/dsl.ts",
+    "./nest": "./src/nest.ts",
     "./compiler": "./src/compiler.ts"
   },
   "bin": {
@@ -12,6 +13,7 @@
   },
   "scripts": {
     "compile": "bun src/cli.ts",
+    "build:example": "bun src/cli.ts examples/employee-api/app.ts -o examples/employee-api/generated/server.ts && bun build examples/employee-api/generated/server.ts --target=bun --minify --outfile examples/employee-api/dist/server.js",
     "test": "bun test",
     "check": "bunx tsc --noEmit"
   },

@@ -4,7 +4,10 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "checkJs": false,
     "strict": true,
+    "experimentalDecorators": true,
     "noEmit": true,
     "skipLibCheck": true,
     "types": ["bun-types"]

@@ -1,56 +1,69 @@
-import { defineApp, schema, t, type Infer } from "../../src/dsl.ts";
-
-export const EmployeeParams = schema({
-  id: t.int({ min: 1 }),
-});
-
-export const EmployeeQuery = schema({
-  details: t.optional(t.boolean()),
-});
+import { schema, t, type Infer } from "../../src/dsl.ts";
+import {
+  Body,
+  Controller,
+  Get,
+  Injectable,
+  Module,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+  type CanActivate,
+  type ExecutionContext,
+} from "../../src/nest.ts";
 
 export const CreateEmployeeBody = schema({
   name: t.string({ minLength: 1, maxLength: 100 }),
   salary: t.number({ min: 0 }),
   active: t.optional(t.boolean()),
-  tags: t.optional(t.array(t.string())),
 });
 
-// These are ordinary TypeScript types available to application code.
-export type EmployeeParams = Infer<typeof EmployeeParams>;
-export type EmployeeQuery = Infer<typeof EmployeeQuery>;
 export type CreateEmployeeBody = Infer<typeof CreateEmployeeBody>;
 
-export default defineApp({
-  name: "EmployeeApi",
+@Injectable()
+export class EmployeeService {
+  findOne(id: number, details = false) {
+    return { id, name: "Example employee", detailsIncluded: details };
+  }
+
+  create(body: CreateEmployeeBody) {
+    return { id: 1, ...body };
+  }
+}
+
+@Injectable()
+export class ApiKeyGuard implements CanActivate {
+  canActivate(context: ExecutionContext): boolean {
+    return context.switchToHttp().getRequest<Request>().headers.get("x-api-key") === "demo";
+  }
+}
+
+@Controller("employees")
+@UseGuards(ApiKeyGuard)
+export class EmployeeController {
+  constructor(private readonly employees: EmployeeService) {}
+
+  @Get(":id")
+  findOne(
+    @Param("id", ParseIntPipe) id: number,
+    @Query("details") details?: boolean,
+    @Req() _request?: Request,
+  ) {
+    return this.employees.findOne(id, details ?? false);
+  }
+
+  @Post()
+  create(@Body(CreateEmployeeBody) body: CreateEmployeeBody) {
+    return this.employees.create(body);
+  }
+}
+
+@Module({
   basePath: "/api",
-
-  permissions: {
-    employeeRead: 1,
-    employeeWrite: 2,
-  },
-
-  schemas: {
-    EmployeeParams,
-    EmployeeQuery,
-    CreateEmployeeBody,
-  },
-
-  routes: [
-    {
-      method: "GET",
-      path: "/employees/:id",
-      handler: "getEmployee",
-      params: EmployeeParams,
-      query: EmployeeQuery,
-      permission: "employeeRead",
-    },
-    {
-      method: "POST",
-      path: "/employees",
-      handler: "createEmployee",
-      body: CreateEmployeeBody,
-      permission: "employeeWrite",
-      status: 201,
-    },
-  ],
-});
+  controllers: [EmployeeController],
+  providers: [EmployeeService, ApiKeyGuard],
+})
+export class AppModule {}

@@ -38,6 +38,33 @@ export interface RouteDefinition {
   body?: string;
   permission?: string;
   status?: number;
+  invocation?: NestInvocation;
+}
+
+export type NestArgumentKind = "request" | "body" | "params" | "query" | "param" | "queryField";
+
+export interface NestArgumentBinding {
+  kind: NestArgumentKind;
+  name?: string;
+}
+
+export interface NestInvocation {
+  controller: string;
+  method: string;
+  arguments: NestArgumentBinding[];
+  guards: string[];
+}
+
+export interface NestClassDefinition {
+  name: string;
+  variable: string;
+  dependencies: string[];
+}
+
+export interface NestDefinition {
+  sourceImport: string;
+  providers: NestClassDefinition[];
+  controllers: NestClassDefinition[];
 }
 
 export interface AppDefinition {
@@ -46,4 +73,5 @@ export interface AppDefinition {
   permissions: PermissionDefinition[];
   types: TypeDefinition[];
   routes: RouteDefinition[];
+  nest?: NestDefinition;
 }

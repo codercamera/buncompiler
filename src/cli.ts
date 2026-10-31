@@ -1,7 +1,8 @@
 #!/usr/bin/env bun
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, relative, resolve } from "node:path";
+import { dirname, relative, resolve, sep } from "node:path";
 import { compile } from "./compiler.ts";
+import { stripNestRuntime } from "./nest-transformer.ts";
 
 function usage(): never {
   console.error("Usage: bunc <app.ts> [-o generated/server.ts] [--handlers ./handlers.ts]");
@@ -21,8 +22,15 @@ if ((outputFlag >= 0 && !args[outputFlag + 1]) || (handlersFlag >= 0 && !args[ha
 
 try {
   const source = await readFile(input, "utf8");
-  const generated = compile(source, { handlersImport });
+  let sourceImport = relative(dirname(output), input).split(sep).join("/");
+  if (!sourceImport.startsWith(".")) sourceImport = `./${sourceImport}`;
   await mkdir(dirname(output), { recursive: true });
+  if (/@Module\s*\(/.test(source)) {
+    const runtimeFile = resolve(dirname(output), "application.generated.js");
+    await writeFile(runtimeFile, stripNestRuntime(source, input), "utf8");
+    sourceImport = "./application.generated.js";
+  }
+  const generated = compile(source, { handlersImport, sourceImport });
   await writeFile(output, generated, "utf8");
   console.log(`Compiled ${relative(process.cwd(), input)} -> ${relative(process.cwd(), output)}`);
 } catch (error) {
