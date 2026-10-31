@@ -2,19 +2,25 @@ import { describe, expect, test } from "bun:test";
 import { compile, CompileError, parse } from "../src/compiler.ts";
 
 const source = `
-app TestApi {
-  basePath: "/api";
-  permissions { read: 1; }
-  type Params = { id: int @min(1); };
-  GET "/items/:id" => getItem {
-    params: Params;
-    permission: read;
-  }
-}
+import { defineApp, schema, t } from "buncompiler";
+const Params = schema({ id: t.int({ min: 1 }) });
+export default defineApp({
+  name: "TestApi",
+  basePath: "/api",
+  permissions: { read: 1 },
+  schemas: { Params },
+  routes: [{
+    method: "GET",
+    path: "/items/:id",
+    handler: "getItem",
+    params: Params,
+    permission: "read",
+  }],
+});
 `;
 
 describe("buncompiler", () => {
-  test("parses TypeScript-like definitions", () => {
+  test("parses valid TypeScript definitions", () => {
     const app = parse(source);
     expect(app.name).toBe("TestApi");
     expect(app.routes[0].handler).toBe("getItem");
@@ -30,13 +36,13 @@ describe("buncompiler", () => {
   });
 
   test("rejects an unknown permission", () => {
-    expect(() => compile(source.replace("permission: read", "permission: missing"))).toThrow(CompileError);
+    expect(() => compile(source.replace('permission: "read"', 'permission: "missing"'))).toThrow(CompileError);
   });
 
   test("rejects duplicate routes", () => {
-    const duplicate = source.replace("\n}", `
-  GET "/items/:id" => another { params: Params; }
-}`);
+    const duplicate = source.replace("  }],", `  }, {
+    method: "GET", path: "/items/:id", handler: "another", params: Params,
+  }],`);
     expect(() => compile(duplicate)).toThrow("Duplicate route");
   });
 });

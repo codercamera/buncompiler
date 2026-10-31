@@ -4,7 +4,7 @@ import { dirname, relative, resolve } from "node:path";
 import { compile } from "./compiler.ts";
 
 function usage(): never {
-  console.error("Usage: bunc <input.bunc> [-o generated/server.ts] [--handlers ./handlers.ts]");
+  console.error("Usage: bunc <app.ts> [-o generated/server.ts] [--handlers ./handlers.ts]");
   process.exit(1);
 }
 

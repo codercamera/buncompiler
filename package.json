@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "description": "A deterministic compiler for TypeScript-like Bun HTTP applications",
   "type": "module",
+  "exports": {
+    ".": "./src/dsl.ts",
+    "./compiler": "./src/compiler.ts"
+  },
   "bin": {
     "bunc": "./src/cli.ts"
   },
@@ -11,9 +15,11 @@
     "test": "bun test",
     "check": "bunx tsc --noEmit"
   },
+  "dependencies": {
+    "typescript": "5.9.3"
+  },
   "devDependencies": {
-    "@types/bun": "latest",
-    "typescript": "latest"
+    "@types/bun": "latest"
   },
   "engines": {
     "bun": ">=1.2"
