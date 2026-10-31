@@ -1,0 +1,18 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile=false
+      - run: bun test
+      - run: bunx tsc --noEmit
+      - run: bun src/cli.ts examples/employee-api/app.bunc -o examples/employee-api/generated/server.ts --handlers ../handlers.ts

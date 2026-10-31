@@ -1,0 +1,6 @@
+node_modules/
+dist/
+**/generated/
+.codex/
+*.log
+.DS_Store
