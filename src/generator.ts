@@ -78,6 +78,7 @@ function missingDependency(name: string, owner: string): never {
 function emitRuntimeHelpers(lines: string[]): void {
   lines.push("type ParseResult<T> = { ok: true; value: T } | { ok: false; field: string; message: string };", "");
   lines.push("const jsonHeaders = { \"content-type\": \"application/json; charset=utf-8\" } as const;");
+  lines.push("const textHeaders = { \"content-type\": \"text/plain; charset=utf-8\" } as const;");
   lines.push("function json(value: unknown, status = 200): Response {");
   lines.push("  return new Response(JSON.stringify(value), { status, headers: jsonHeaders });", "}");
   lines.push("function invalid(result: { field: string; message: string }): Response {");
@@ -87,7 +88,9 @@ function emitRuntimeHelpers(lines: string[]): void {
   lines.push("async function bodyAsJson(request: Request): Promise<unknown> {");
   lines.push("  try { return await request.json(); } catch { return undefined; }", "}");
   lines.push("function toResponse(value: unknown, status: number): Response {");
-  lines.push("  return value instanceof Response ? value : json(value, status);", "}", "");
+  lines.push("  if (value instanceof Response) return value;");
+  lines.push("  if (typeof value === \"string\") return new Response(value, { status, headers: textHeaders });");
+  lines.push("  return json(value, status);", "}", "");
   lines.push("function exceptionResponse(error: unknown): Response {");
   lines.push("  if (typeof error === \"object\" && error !== null && \"status\" in error && typeof error.status === \"number\") {");
   lines.push("    return json({ error: error instanceof Error ? error.message : \"Request failed\" }, error.status);");

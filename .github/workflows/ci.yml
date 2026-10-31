@@ -12,8 +12,13 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      - run: bun install --frozen-lockfile=false
+      - run: bun install --frozen-lockfile
       - run: bun test
       - run: bunx tsc --noEmit
       - run: bun src/cli.ts examples/employee-api/app.ts -o examples/employee-api/generated/server.ts
       - run: bun build examples/employee-api/generated/server.ts --target=bun --minify --outfile examples/employee-api/dist/server.js
+      - run: bun src/cli.ts benchmark/buncompiler/app.ts -o benchmark/buncompiler/generated/server.ts
+      - run: bun build benchmark/buncompiler/generated/server.ts --target=bun --minify --outfile benchmark/buncompiler/dist/server.js
+      - run: bun build benchmark/hono/server.ts --target=bun --minify --outfile benchmark/hono/dist/server.js
+      - run: bunx tsc -p benchmark/nest/tsconfig.json
+      - run: bash -n benchmark/run.sh

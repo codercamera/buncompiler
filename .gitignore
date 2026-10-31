@@ -1,6 +1,8 @@
 node_modules/
 dist/
 **/generated/
+benchmark/results/
+benchmark/*/dist/
 .codex/
 *.log
 .DS_Store

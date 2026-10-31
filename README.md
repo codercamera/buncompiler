@@ -116,3 +116,14 @@ This first version proves the build-time model. The next meaningful steps are:
 6. Differential and fuzz testing for generated behavior.
 
 Performance claims will be added only after repeatable benchmarks exist.
+
+## Benchmark suite
+
+The repository includes equivalent buncompiler, Hono, and NestJS servers plus an `oha` runner. It benchmarks a plain response, a parameterized JSON route, and a validated JSON POST route, with warm-up and repeated runs.
+
+```bash
+bun install
+bun run benchmark
+```
+
+See [`benchmark/README.md`](benchmark/README.md) for requirements, short-run settings, methodology, and result files. The runner records raw JSON, environment metadata, median RPS, and p50/p95/p99 latency.
